@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createCourtType, deleteCourtType } from "@/lib/actions/courts";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Alert } from "@/components/Alert";
@@ -48,16 +49,27 @@ export default function CourtsClient({
   tenantId: string;
   initialCourts: Court[];
 }) {
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [createState, createAction] = useActionState(
     async (prev: unknown, fd: FormData) => {
       const res = await createCourtType(prev, fd);
-      if (res?.ok) setShowForm(false);
+      if (res?.ok) {
+        setShowForm(false);
+        router.refresh();
+      }
       return res;
     },
     null,
   );
-  const [deleteState, deleteAction] = useActionState(deleteCourtType, null);
+  const [deleteState, deleteAction] = useActionState(
+    async (prev: unknown, fd: FormData) => {
+      const res = await deleteCourtType(prev, fd);
+      if (res?.ok) router.refresh();
+      return res;
+    },
+    null,
+  );
 
   const slotsPerDay = (court: Court) => {
     const [oh, om] = court.open_time.split(":").map(Number);
