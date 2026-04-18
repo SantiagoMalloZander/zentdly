@@ -34,7 +34,7 @@ export default function TenantOverviewPage({
           <label className="block text-sm font-medium text-gray-700 mb-1">Zona horaria</label>
           <select
             name="timezone"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             <option value="America/Argentina/Buenos_Aires">Buenos Aires (GMT-3)</option>
             <option value="America/Argentina/Cordoba">Córdoba (GMT-3)</option>
@@ -74,7 +74,7 @@ function Field({
         type="text"
         name={name}
         required={required}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
       />
       {hint && <p className="mt-1 text-xs text-gray-400">{hint}</p>}
     </div>

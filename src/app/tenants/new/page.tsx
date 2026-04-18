@@ -42,7 +42,7 @@ export default function NewTenantPage() {
             <select
               name="timezone"
               defaultValue="America/Argentina/Buenos_Aires"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="America/Argentina/Buenos_Aires">Buenos Aires (GMT-3)</option>
               <option value="America/Argentina/Cordoba">Córdoba (GMT-3)</option>
@@ -92,7 +92,7 @@ function Field({
         name={name}
         placeholder={placeholder}
         required={required}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
       />
       {hint && <p className="mt-1 text-xs text-gray-400">{hint}</p>}
     </div>

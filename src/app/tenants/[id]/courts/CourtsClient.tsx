@@ -101,7 +101,7 @@ export default function CourtsClient({
               <select
                 name="sport_name"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 {SPORTS.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -119,7 +119,7 @@ export default function CourtsClient({
                 min={1}
                 defaultValue={1}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -130,7 +130,7 @@ export default function CourtsClient({
               <select
                 name="slot_duration_minutes"
                 defaultValue={60}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value={30}>30 minutos</option>
                 <option value={60}>1 hora</option>
@@ -149,7 +149,7 @@ export default function CourtsClient({
                 min={0}
                 step={0.01}
                 placeholder="Ej: 5000"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -162,7 +162,7 @@ export default function CourtsClient({
                 name="open_time"
                 defaultValue="08:00"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -175,7 +175,7 @@ export default function CourtsClient({
                 name="close_time"
                 defaultValue="23:00"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
           </div>
