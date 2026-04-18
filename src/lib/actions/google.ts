@@ -59,7 +59,7 @@ export async function saveGoogleConfig(_prev: unknown, formData: FormData) {
   return { ok: true };
 }
 
-export async function testGoogleConnection(tenantId: string): Promise<{ ok?: boolean; error?: string; calendarOk?: boolean; sheetsOk?: boolean }> {
+export async function testGoogleConnection(tenantId: string): Promise<{ ok?: boolean; error?: string; calendarOk?: boolean; sheetsOk?: boolean; calendarError?: string }> {
   try {
     const config = await getGoogleConfig(tenantId);
     if (!config?.service_account) return { error: "No hay credenciales configuradas." };
