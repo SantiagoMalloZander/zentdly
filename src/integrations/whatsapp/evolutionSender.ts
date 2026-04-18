@@ -9,7 +9,14 @@ export async function evolutionSendText(instanceName: string, to: string, text: 
   });
 
   if (!res.ok) {
-    const err = await res.text().catch(() => "");
-    throw new Error(`Evolution send failed [${res.status}]: ${err}`);
+    const body = await res.text().catch(() => "");
+
+    // @lid JIDs are not supported by Evolution API v1.x — log and skip
+    if (res.status === 400 && body.includes("exists") && to.includes("@lid")) {
+      console.warn(`[evolution] Cannot send to @lid JID ${to} (Evolution v1.x limitation). Message not delivered.`);
+      return;
+    }
+
+    throw new Error(`Evolution send failed [${res.status}]: ${body}`);
   }
 }

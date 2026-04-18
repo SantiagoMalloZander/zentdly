@@ -7,6 +7,7 @@ import type { ChatCompletionMessageParam } from "openai/resources/chat/completio
 export interface EvolutionIncomingMessage {
   instanceName: string;
   from: string;
+  jid: string;        // full remoteJid — use this to send back (handles @lid format)
   text: string;
   messageId: string;
   pushName?: string;
@@ -87,7 +88,7 @@ export async function handleEvolutionMessage(msg: EvolutionIncomingMessage): Pro
   );
 
   // ── 7. Send reply via Evolution ─────────────────────────────────────────────
-  await evolutionSendText(msg.instanceName, msg.from, reply);
+  await evolutionSendText(msg.instanceName, msg.jid, reply);
 
   // ── 8. Save outbound message ────────────────────────────────────────────────
   await db.from("messages").insert({

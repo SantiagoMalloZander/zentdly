@@ -86,6 +86,8 @@ function parseEvolutionPayload(payload: Record<string, unknown>): EvolutionIncom
     if (!remoteJid || remoteJid.includes("@g.us")) return null; // skip groups
 
     const from = remoteJid.split("@")[0];
+    // @lid = Meta's new privacy JID format — must send back using the full JID
+    const jid = remoteJid;
     const text =
       (message?.conversation as string) ??
       ((message?.extendedTextMessage as Record<string, unknown>)?.text as string) ??
@@ -96,6 +98,7 @@ function parseEvolutionPayload(payload: Record<string, unknown>): EvolutionIncom
     return {
       instanceName: payload.instance as string,
       from,
+      jid,
       text: text.trim(),
       messageId: key?.id as string,
       pushName: data?.pushName as string | undefined,
