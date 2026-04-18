@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
-import { connectEvolutionWhatsApp, saveWhatsAppConfig } from "@/lib/actions/whatsapp";
+import { useActionState, useState, useTransition, useEffect, useRef } from "react";
+import { connectEvolutionWhatsApp, saveWhatsAppConfig, checkEvolutionConnection } from "@/lib/actions/whatsapp";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Alert } from "@/components/Alert";
 
@@ -26,11 +26,39 @@ export default function WhatsAppClient({
   const savedProvider = initialConfig?.provider === "meta" ? "meta" : "evolution";
   const [provider, setProvider] = useState<"evolution" | "meta">(savedProvider);
 
+  // Check on mount if already connected
+  useEffect(() => {
+    if (savedProvider === "evolution") {
+      checkEvolutionConnection(tenantId).then(({ connected }) => {
+        if (connected) setQrStatus("connected");
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Evolution QR state
   const [qrStatus, setQrStatus] = useState<QrStatus>("idle");
   const [qr, setQr] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Poll connection state while QR is shown
+  useEffect(() => {
+    if (qrStatus === "qr") {
+      pollRef.current = setInterval(async () => {
+        const { connected } = await checkEvolutionConnection(tenantId);
+        if (connected) {
+          clearInterval(pollRef.current!);
+          setQrStatus("connected");
+          setQr(null);
+        }
+      }, 3000);
+    } else {
+      if (pollRef.current) clearInterval(pollRef.current);
+    }
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [qrStatus, tenantId]);
 
   // Meta form state
   const [metaState, metaAction] = useActionState(saveWhatsAppConfig, null);

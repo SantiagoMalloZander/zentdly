@@ -131,6 +131,30 @@ export async function getEvolutionQR(tenantId: string): Promise<{ qr?: string; c
   return connectEvolutionWhatsApp(tenantId);
 }
 
+export async function checkEvolutionConnection(tenantId: string): Promise<{ connected: boolean }> {
+  try {
+    const db = createServerClient();
+    const { data: tenant } = await db
+      .from("tenants")
+      .select("slug")
+      .eq("id", tenantId)
+      .single();
+
+    if (!tenant?.slug) return { connected: false };
+
+    const res = await fetch(
+      `${EVOLUTION_URL}/instance/connectionState/${tenant.slug}`,
+      { headers: { apikey: EVOLUTION_KEY }, cache: "no-store" }
+    ).catch(() => null);
+
+    if (!res?.ok) return { connected: false };
+    const json = await res.json().catch(() => ({}));
+    return { connected: json?.instance?.state === "open" };
+  } catch {
+    return { connected: false };
+  }
+}
+
 export async function saveBotPrompt(_prev: unknown, formData: FormData) {
   const tenantId = formData.get("tenant_id") as string;
   const botPrompt = formData.get("bot_prompt") as string;
