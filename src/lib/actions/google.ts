@@ -75,25 +75,28 @@ export async function testGoogleConnection(tenantId: string): Promise<{ ok?: boo
     let calendarOk = false;
     let sheetsOk = false;
 
+    let calendarError: string | undefined;
+
     if (config.calendar_enabled && config.calendar_id) {
       try {
-        const cal = new GoogleCalendarProvider({
-          credentials: creds,
-          calendar_id: config.calendar_id,
-          timezone: "America/Argentina/Buenos_Aires",
-        });
-        // Try listing one event to verify access
         const { google } = await import("googleapis");
         const auth = new google.auth.GoogleAuth({
           credentials: creds,
           scopes: ["https://www.googleapis.com/auth/calendar"],
         });
         const calendar = google.calendar({ version: "v3", auth });
-        await calendar.calendarList.get({ calendarId: config.calendar_id });
+        await calendar.calendars.get({ calendarId: config.calendar_id });
         calendarOk = true;
-        void cal;
-      } catch {
+      } catch (e) {
         calendarOk = false;
+        const msg = e instanceof Error ? e.message : String(e);
+        if (msg.includes("404")) {
+          calendarError = "Calendar no encontrado. Verificá que el Calendar ID sea correcto.";
+        } else if (msg.includes("403") || msg.includes("forbidden") || msg.includes("permission")) {
+          calendarError = "Sin permisos. Compartí el calendario con el client_email de la cuenta de servicio (con permiso 'Realizar cambios en eventos').";
+        } else {
+          calendarError = msg;
+        }
       }
     }
 
@@ -112,7 +115,7 @@ export async function testGoogleConnection(tenantId: string): Promise<{ ok?: boo
       }
     }
 
-    return { ok: true, calendarOk, sheetsOk };
+    return { ok: true, calendarOk, sheetsOk, calendarError };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Error desconocido." };
   }

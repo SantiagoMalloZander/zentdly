@@ -22,7 +22,7 @@ export default function GoogleClient({
   initialConfig: Config;
 }) {
   const [state, action] = useActionState(saveGoogleConfig, null);
-  const [testResult, setTestResult] = useState<{ ok?: boolean; error?: string; calendarOk?: boolean; sheetsOk?: boolean } | null>(null);
+  const [testResult, setTestResult] = useState<{ ok?: boolean; error?: string; calendarOk?: boolean; sheetsOk?: boolean; calendarError?: string } | null>(null);
   const [isTesting, startTest] = useTransition();
 
   const savedJson = initialConfig?.service_account
@@ -191,9 +191,14 @@ export default function GoogleClient({
             ) : (
               <>
                 {testResult.calendarOk !== undefined && (
-                  <p className={testResult.calendarOk ? "text-green-700" : "text-red-600"}>
-                    {testResult.calendarOk ? "✓" : "✗"} Google Calendar
-                  </p>
+                  <div>
+                    <p className={testResult.calendarOk ? "text-green-700" : "text-red-600"}>
+                      {testResult.calendarOk ? "✓" : "✗"} Google Calendar
+                    </p>
+                    {!testResult.calendarOk && testResult.calendarError && (
+                      <p className="text-red-500 text-xs mt-0.5 ml-3">{testResult.calendarError}</p>
+                    )}
+                  </div>
                 )}
                 {testResult.sheetsOk !== undefined && (
                   <p className={testResult.sheetsOk ? "text-green-700" : "text-red-600"}>
