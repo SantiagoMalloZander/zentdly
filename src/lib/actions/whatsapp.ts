@@ -79,6 +79,20 @@ export async function connectEvolutionWhatsApp(
       { onConflict: "tenant_id" }
     );
 
+    // Configure Evolution webhook to point to our endpoint
+    const webhookUrl = `${process.env.APP_URL}/api/webhooks/whatsapp`;
+    await fetch(`${EVOLUTION_URL}/webhook/set/${instanceName}`, {
+      method: "POST",
+      headers: { apikey: EVOLUTION_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: webhookUrl,
+        enabled: true,
+        webhookByEvents: false,
+        webhookBase64: false,
+        events: ["MESSAGES_UPSERT"],
+      }),
+    }).catch(() => null);
+
     // Check if already connected
     const stateRes = await fetch(
       `${EVOLUTION_URL}/instance/connectionState/${instanceName}`,
