@@ -80,40 +80,31 @@ export async function connectEvolutionWhatsApp(
     );
 
     // Check if already connected
-    const statusRes = await fetch(
-      `${EVOLUTION_URL}/instance/fetchInstances?instanceName=${instanceName}`,
+    const stateRes = await fetch(
+      `${EVOLUTION_URL}/instance/connectionState/${instanceName}`,
       { headers: { apikey: EVOLUTION_KEY } }
     ).catch(() => null);
 
-    if (statusRes?.ok) {
-      const list = await statusRes.json().catch(() => []);
-      const instances = Array.isArray(list) ? list : [list];
-      const found = instances.find(
-        (i: { instance?: { instanceName?: string; state?: string } }) =>
-          i?.instance?.instanceName === instanceName
-      );
-      if (found?.instance?.state === "open") return { connected: true };
+    if (stateRes?.ok) {
+      const stateJson = await stateRes.json().catch(() => ({}));
+      if (stateJson?.instance?.state === "open") return { connected: true };
     }
 
-    // Create instance (idempotent)
-    await fetch(`${EVOLUTION_URL}/instance/create`, {
+    // Create instance (idempotent — v1.8.2 returns QR in create response)
+    const createRes = await fetch(`${EVOLUTION_URL}/instance/create`, {
       method: "POST",
       headers: { apikey: EVOLUTION_KEY, "Content-Type": "application/json" },
       body: JSON.stringify({ instanceName, qrcode: true, integration: "WHATSAPP-BAILEYS" }),
     }).catch(() => null);
 
-    // Get QR
-    const res = await fetch(`${EVOLUTION_URL}/instance/connect/${instanceName}`, {
-      headers: { apikey: EVOLUTION_KEY },
-    });
-
-    if (!res.ok)
+    if (!createRes?.ok)
       return {
-        error: `El servidor de Evolution respondió con error ${res.status}. Puede estar iniciando, intentá en unos segundos.`,
+        error: `El servidor de Evolution respondió con error ${createRes?.status ?? "desconocido"}. Puede estar iniciando, intentá en unos segundos.`,
       };
 
-    const json = await res.json();
-    const qr = json?.base64 ?? json?.qrcode?.base64 ?? json?.data?.qrcode ?? json?.code;
+    const json = await createRes.json();
+    // v1.8.2: QR is in json.qrcode.base64
+    const qr = json?.qrcode?.base64 ?? json?.base64 ?? json?.qrcode?.code;
 
     if (!qr)
       return {
