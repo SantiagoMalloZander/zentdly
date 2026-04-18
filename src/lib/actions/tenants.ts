@@ -19,7 +19,13 @@ export async function createTenant(_prev: unknown, formData: FormData) {
   const parsed = TenantSchema.safeParse(raw);
   if (!parsed.success) return { error: "Datos inválidos." };
 
-  const db = createServerClient();
+  let db;
+  try {
+    db = createServerClient();
+  } catch {
+    return { error: "Faltan variables de entorno de Supabase. Configurá NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en Vercel." };
+  }
+
   const { data, error } = await db
     .from("tenants")
     .insert(parsed.data)
@@ -37,7 +43,13 @@ export async function updateTenant(_prev: unknown, formData: FormData) {
   const parsed = TenantSchema.safeParse(raw);
   if (!parsed.success) return { error: "Datos inválidos." };
 
-  const db = createServerClient();
+  let db;
+  try {
+    db = createServerClient();
+  } catch {
+    return { error: "Faltan variables de entorno de Supabase." };
+  }
+
   const { error } = await db.from("tenants").update(parsed.data).eq("id", id);
   if (error) return { error: error.message };
 

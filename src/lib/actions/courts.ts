@@ -37,7 +37,9 @@ export async function createCourtType(_prev: unknown, formData: FormData) {
   const daysRaw = formData.getAll("days_of_week").map(Number);
   const days = daysRaw.length > 0 ? daysRaw : [1, 2, 3, 4, 5, 6, 0];
 
-  const db = createServerClient();
+  let db;
+  try { db = createServerClient(); } catch { return { error: "Faltan variables de entorno de Supabase." }; }
+
   const { error } = await db.from("court_types").insert({
     ...parsed.data,
     days_of_week: days,
@@ -53,7 +55,8 @@ export async function deleteCourtType(_prev: unknown, formData: FormData) {
   const id = formData.get("id") as string;
   const tenantId = formData.get("tenant_id") as string;
 
-  const db = createServerClient();
+  let db;
+  try { db = createServerClient(); } catch { return { error: "Faltan variables de entorno de Supabase." }; }
   const { error } = await db.from("court_types").delete().eq("id", id);
   if (error) return { error: error.message };
 
