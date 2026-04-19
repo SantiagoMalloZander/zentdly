@@ -75,7 +75,9 @@ export async function POST(req: NextRequest) {
 
 function parseEvolutionPayload(payload: Record<string, unknown>): EvolutionIncomingMessage | null {
   try {
-    const data = payload.data as Record<string, unknown>;
+    // Evolution API sends data as an array of messages
+    const rawData = payload.data;
+    const data = (Array.isArray(rawData) ? rawData[0] : rawData) as Record<string, unknown>;
     const key = data?.key as Record<string, unknown>;
     const message = data?.message as Record<string, unknown>;
 
