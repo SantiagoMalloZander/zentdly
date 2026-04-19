@@ -43,22 +43,43 @@ export default function WhatsAppClient({
   const [isPending, startTransition] = useTransition();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Poll connection state while QR is shown
+  const qrRefreshRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Poll connection state while QR is shown + auto-refresh QR before it expires
   useEffect(() => {
     if (qrStatus === "qr") {
+      // Check if connected every 3s
       pollRef.current = setInterval(async () => {
         const { connected } = await checkEvolutionConnection(tenantId);
         if (connected) {
           clearInterval(pollRef.current!);
+          if (qrRefreshRef.current) clearTimeout(qrRefreshRef.current);
           setQrStatus("connected");
           setQr(null);
         }
       }, 3000);
+
+      // Auto-refresh QR every 50s before it expires
+      qrRefreshRef.current = setTimeout(() => {
+        startTransition(async () => {
+          const res = await connectEvolutionWhatsApp(tenantId);
+          if (res.connected) {
+            setQrStatus("connected");
+            setQr(null);
+          } else if (res.qr) {
+            setQr(res.qr);
+          }
+        });
+      }, 50000);
     } else {
       if (pollRef.current) clearInterval(pollRef.current);
+      if (qrRefreshRef.current) clearTimeout(qrRefreshRef.current);
     }
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [qrStatus, tenantId]);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (qrRefreshRef.current) clearTimeout(qrRefreshRef.current);
+    };
+  }, [qrStatus, qr, tenantId]);
 
   // Meta form state
   const [metaState, metaAction] = useActionState(saveWhatsAppConfig, null);

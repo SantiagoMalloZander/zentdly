@@ -93,18 +93,29 @@ export async function connectEvolutionWhatsApp(
       }),
     }).catch(() => null);
 
-    // Check if already connected
+    // 1. Check connection state first
     const stateRes = await fetch(
       `${EVOLUTION_URL}/instance/connectionState/${instanceName}`,
       { headers: { apikey: EVOLUTION_KEY } }
     ).catch(() => null);
 
-    if (stateRes?.ok) {
-      const stateJson = await stateRes.json().catch(() => ({}));
-      if (stateJson?.instance?.state === "open") return { connected: true };
+    const stateJson = stateRes?.ok ? await stateRes.json().catch(() => ({})) : {};
+    if (stateJson?.instance?.state === "open") return { connected: true };
+
+    // 2. Instance exists but disconnected — get a fresh QR via /instance/connect
+    const connectRes = await fetch(`${EVOLUTION_URL}/instance/connect/${instanceName}`, {
+      headers: { apikey: EVOLUTION_KEY },
+    }).catch(() => null);
+
+    if (connectRes?.ok) {
+      const connectJson = await connectRes.json().catch(() => ({}));
+      // Already connected (race condition)
+      if (connectJson?.instance?.state === "open") return { connected: true };
+      const qr = connectJson?.base64 ?? connectJson?.qrcode?.base64 ?? connectJson?.code ?? connectJson?.qrcode?.code;
+      if (qr) return { qr };
     }
 
-    // Try to create instance — v1.8.2 returns QR in create response
+    // 3. Instance doesn't exist yet — create it
     const createRes = await fetch(`${EVOLUTION_URL}/instance/create`, {
       method: "POST",
       headers: { apikey: EVOLUTION_KEY, "Content-Type": "application/json" },
@@ -112,30 +123,12 @@ export async function connectEvolutionWhatsApp(
     }).catch(() => null);
 
     if (createRes?.ok) {
-      const json = await createRes.json();
+      const json = await createRes.json().catch(() => ({}));
       const qr = json?.qrcode?.base64 ?? json?.base64 ?? json?.qrcode?.code;
       if (qr) return { qr };
     }
 
-    // Instance already exists — fetch QR from connect endpoint
-    const connectRes = await fetch(`${EVOLUTION_URL}/instance/connect/${instanceName}`, {
-      headers: { apikey: EVOLUTION_KEY },
-    }).catch(() => null);
-
-    if (!connectRes?.ok)
-      return {
-        error: `No se pudo obtener el QR (error ${connectRes?.status ?? "desconocido"}). Intentá de nuevo en unos segundos.`,
-      };
-
-    const connectJson = await connectRes.json();
-    const qr = connectJson?.base64 ?? connectJson?.qrcode?.base64 ?? connectJson?.code;
-
-    if (!qr)
-      return {
-        error: "El servidor está iniciando. Esperá unos segundos y volvé a intentar.",
-      };
-
-    return { qr };
+    return { error: "No se pudo obtener el QR. Intentá de nuevo en unos segundos." };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Error de conexión con Evolution API." };
   }
